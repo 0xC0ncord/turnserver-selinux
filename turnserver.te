@@ -1,0 +1,81 @@
+policy_module(turnserver, 1.0)
+
+gen_require(`
+    type proc_t;
+    type cert_t;
+')
+
+########################################
+#
+# Declarations
+#
+
+type turnserver_t;
+type turnserver_exec_t;
+init_daemon_domain(turnserver_t, turnserver_exec_t)
+
+type turnserver_etc_t;
+files_config_file(turnserver_etc_t)
+
+type turnserver_log_t;
+logging_log_file(turnserver_log_t)
+
+type turnserver_runtime_t alias turnserver_var_run_t;
+files_pid_file(turnserver_runtime_t)
+
+type turnserver_tmp_t;
+files_tmp_file(turnserver_tmp_t)
+
+type turnserver_port_t;
+corenet_port(turnserver_port_t)
+
+########################################
+#
+# Local policy
+#
+
+allow turnserver_t proc_t:file { read open };
+
+allow turnserver_t self:process { getsched setsched signal_perms };
+#allow turnserver_t self:fifo_file rw_fifo_file_perms;
+allow turnserver_t self:tcp_socket all_tcp_socket_perms;
+allow turnserver_t self:udp_socket all_udp_socket_perms;
+allow turnserver_t self:sctp_socket { create };
+allow turnserver_t turnserver_port_t:tcp_socket { name_bind name_connect };
+allow turnserver_t turnserver_port_t:udp_socket { name_bind };
+
+allow turnserver_t self:unix_dgram_socket create_socket_perms;
+allow turnserver_t self:unix_stream_socket create_stream_socket_perms;
+#allow turnserver_t self:netlink_route_socket all_netlink_route_socket_perms;
+
+corenet_tcp_bind_generic_node(turnserver_t)
+corenet_udp_bind_generic_node(turnserver_t)
+
+fs_getattr_xattr_fs(turnserver_t)
+
+kernel_request_load_module(turnserver_t)
+
+miscfiles_read_localization(turnserver_t)
+miscfiles_read_generic_certs(turnserver_t)
+miscfiles_read_generic_tls_privkey(turnserver_t)
+
+allow turnserver_t turnserver_etc_t:dir list_dir_perms;
+read_files_pattern(turnserver_t, turnserver_etc_t, turnserver_etc_t)
+read_lnk_files_pattern(turnserver_t, turnserver_etc_t, turnserver_etc_t)
+
+allow turnserver_t turnserver_log_t:dir setattr_dir_perms;
+append_files_pattern(turnserver_t, turnserver_log_t, turnserver_log_t)
+create_files_pattern(turnserver_t, turnserver_log_t, turnserver_log_t)
+setattr_files_pattern(turnserver_t, turnserver_log_t, turnserver_log_t)
+logging_log_filetrans(turnserver_t, turnserver_log_t, { dir file })
+logging_send_syslog_msg(turnserver_t)
+allow turnserver_t turnserver_log_t:file { unlink rename };
+
+manage_files_pattern(turnserver_t, turnserver_tmp_t, turnserver_tmp_t)
+files_tmp_filetrans(turnserver_t, turnserver_tmp_t, { file dir })
+
+files_pid_file(turnserver_runtime_t)
+files_search_pids(turnserver_t)
+files_pid_filetrans(turnserver_t, turnserver_runtime_t, file)
+manage_dirs_pattern(turnserver_t, turnserver_runtime_t, turnserver_runtime_t)
+manage_files_pattern(turnserver_t, turnserver_runtime_t, turnserver_runtime_t)

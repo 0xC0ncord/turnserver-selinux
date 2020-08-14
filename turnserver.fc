@@ -1,0 +1,6 @@
+/usr/bin/turnserver              -- gen_context(system_u:object_r:turnserver_exec_t,s0)
+/etc/turnserver(/.*)?               gen_context(system_u:object_r:turnserver_etc_t,s0)
+/etc/turnserver\.conf            -- gen_context(system_u:object_r:turnserver_etc_t,s0)
+/var/log/turnserver(/.*)?           gen_context(system_u:object_r:turnserver_log_t,s0)
+/var/log/turnserver\.log         -- gen_context(system_u:object_r:turnserver_log_t,s0)
+/run/turnserver(/.*)?               gen_context(system_u:object_r:turnserver_runtime_t,s0)
