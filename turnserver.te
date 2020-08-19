@@ -1,4 +1,4 @@
-policy_module(turnserver, 1.0)
+policy_module(turnserver, 1.0.0)
 
 gen_require(`
     type proc_t;
